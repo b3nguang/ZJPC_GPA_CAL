@@ -11,26 +11,26 @@ score_to_point = {
     '不及格': 0.00
 }
 
-sum_xuefen = sum(data['学分'])
-
-data['成绩'] = data['成绩'].apply(lambda x: score_to_point[x] if x in score_to_point else x)
-data['成绩'] = pd.to_numeric(data['成绩'], errors='coerce')
+data['成绩'] = data['成绩'].replace(score_to_point).apply(pd.to_numeric, errors='coerce')
 list_gpa = []
 
 for index, row in data.iterrows():
     if row['考核方式'] == '考试':
         grade = 4 - 3 * (100 - row['成绩']) ** 2 / 1600
-        gpa = grade * row['学分']
-        list_gpa.append(gpa)
-        print(row['课程名称'], gpa)
+        if row['成绩'] < 60:
+            grade = 0
     else:
         grade = row['成绩']
-        gpa = grade * row['学分']
-        print(row['课程名称'], gpa)
-        list_gpa.append(gpa)
 
-print(f'总课程绩点:{sum(list_gpa)}')
-print(f'总课程学分:{sum_xuefen}')
+    gpa = grade * row['学分']
+    list_gpa.append(gpa)
+    print(row['课程名称'], gpa)
 
-ave_apt = sum(list_gpa) / sum_xuefen
-print(f'平均绩点:{ave_apt}')
+sum_gpa = sum(list_gpa)
+sum_xuefen = data['学分'].sum()
+
+print(f'总课程绩点: {sum_gpa}')
+print(f'总课程学分: {sum_xuefen}')
+
+ave_apt = sum_gpa / sum_xuefen
+print(f'平均绩点: {ave_apt}')
